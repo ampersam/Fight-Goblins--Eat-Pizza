@@ -1,0 +1,41 @@
+* {
+    padding: 0;
+    margin: 0;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    list-style-type: none;
+}
+
+table {
+    float: left;
+}
+
+td {
+    padding: 5px 5px;
+    text-align: center;
+    vertical-align: middle;
+    height: 25px;
+    width: 25px;
+    font-family: Courier;
+}
+
+.line-of-sight {
+    background-color: rgba(100,100,255,.15);
+
+}
+
+
+/* ICONS */
+.goblin {
+    color: limegreen;
+}
+
+.troll {
+    color: brown;
+    font-weight: bold;
+}
+
+.pizza {
+    color: red;
+}
