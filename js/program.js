@@ -110,13 +110,19 @@ var player = null, $playerCell = null;
     //Initialization functions
     function initGameArrays() {
         var y, x, $el;
+
+        //init the gameState from which all game data is created, modified, and create
         for (y = 0; y < gameState.length; y += 1) {
             gameState[y] = [];
             for (x = 0; x < options.gameWindow.width; x += 1) {
-                gameState[y][x] = '.';
+                gameState[y][x] = '&#183;';
             }
         }
+
+        //roomMap creation (still in beta)
         createMap(5);
+
+        //create the matrix of jquery objects representing each cell in the grid
         for (y = 0; y < gameCells.length; y += 1) {
             gameCells[y] = new Array(options.gameWindow.width);
             for (x = 0; x < gameCells[y].length; x += 1) {
@@ -125,17 +131,18 @@ var player = null, $playerCell = null;
         }
     }
 
-
-    function prepTableEl(options) {
-        var i, j;
-        for (i = 0; i <= options.gameWindow.height-1; i += 1) {
-            $gameWindow.append('<tr></tr>');
-        }
-        $gameWindow.find('tr').each(function() {
-            for (j = 0; j < options.gameWindow.width; j += 1) {
-                $(this).append('<td></td>');
+    function createGameWindowEl (options) {
+        var _rowI, _cellI, _$row;
+        $gameWindow = $('#game-window');
+        for (_rowI = 0; _rowI < options.gameWindow.height; _rowI += 1) {
+            _$row = $(document.createElement('div')).addClass('row');
+            for (_cellI = 0; _cellI < options.gameWindow.width; _cellI += 1) {
+                _$row.append(document.createElement('span'));
             }
-        });
+            $gameWindow.append(_$row);
+        }
+
+        console.log($gameWindow.children());
     }
 
     //gameWindow drawing functions
@@ -144,25 +151,6 @@ var player = null, $playerCell = null;
                                          .addClass(icon.stats.type);
     }
 
-    //LoS code on hold
-    /*
-    function drawLoS(los, facing) {
-        var losCells = [];
-        var $monsterCell = $monsterCell;
-
-        if (facing === 'W') {
-            losCells.push($monsterCell.;
-            if (monster.pos.y > 1) {
-                losCells.push($monsterCell
-            }
-        }
-
-        forEach(losCells, function(x) {
-            x.addClass('line-of-sight');
-        });
-    }
-    */
-
     function updateGameWindow(state) {
         var y, x;
         //populate table with non-actor cell contents
@@ -170,6 +158,9 @@ var player = null, $playerCell = null;
         for (y = 0; y < state.length; y += 1) {
             for (x = 0; x < state[y].length; x += 1) {
                 gameCells[y][x].html(state[y][x]).removeClass();
+                if (state[y][x] === '#') {
+                    gameCells[y][x].addClass('wall');
+                }
             }
         }
         if (player) {
@@ -617,7 +608,7 @@ var player = null, $playerCell = null;
             'bottom': null,
             'right': null,
             'left': null
-        }
+        };
         if (object.pos) {
             results.top = object.pos.y;
             results.bottom = object.pos.y;
@@ -635,8 +626,8 @@ var player = null, $playerCell = null;
 
 
     $(document).ready(function() {
-        prepTableEl(options);
-        $gameRows = $gameWindow.find('tr');
+        createGameWindowEl(options);
+        $gameRows = $gameWindow.find('.row');
         initGameArrays();
 
         $('#play-button').on('click', function(e) {

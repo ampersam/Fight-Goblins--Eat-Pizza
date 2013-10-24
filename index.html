@@ -1,155 +1,53 @@
-<html>
+<html lang="en">
+
 <head>
     <title>[g] Fight Goblins, Eat Pizza [o]</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
+    <meta charset="ISO-8859-1">
 </head>
 
 <body>
-    <table id="game-window">
-        <tr id="r1">
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr id="r2">
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr id="r3">
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr id="r4">
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr id="r5">
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr id="r6">
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr id="r7">
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr id="r8">
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr id="r9">
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr id="r10">
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-    </table>
+    <section id="title-card">
+        <header>FIGHT GOBLINS, EAT PIZZA</header>
+        <section id="quick-guide">
+            <ul>
+                <li class="player">@</li>
+                <li>this is you</li>
+            </ul>
+            <ul>
+                <li class="goblin">g</li>
+                <li>fight this</li>
 
-    <section id="player">
+            </ul>
+            <ul>
+                <li class="pizza">o</li>
+                <li>eat this</li>  
+            </ul>
+        </section>
+        <p>
+            Arrow keys to move.<br />
+            Walk into things to act.<br />
+        </p>
+        <a id="play-button" href="#">PLAY</a>
+
+
+    </section>
+    
+    <section id = "game-window" hidden>
+    </section>
+
+    <section id="interface" hidden>
         <ul>
-            <li class="name">Player</li>
             <li class="level">LV: <span>#</span></li>
             <li class="hp">HP: <span class="current">#</span> / <span class="max">#</span></li>
             <li class="xp">XP: <span>#</span></li>
         </ul>
     </section>
 
-    <section id="monster">
-        <ul>
-            <li class="name">Monster</li>
-            <li class="hp">HP: <span>#<span></li>
-        </ul>
-    </section>
-
-    <script src="jquery.js"></script>
-    <script src="program.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="js/jquery.js"></script>
+    <script src="../fun-damental.js"></script>
+    <script src="js/game-states.js"></script>
+    <script src="js/program.js"></script>
 </body>
 </html>
-aerial
-recon
-and
-operations
-retinue

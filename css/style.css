@@ -9,8 +9,10 @@
 
 body {
     font-family: Courier;
+    font-weight: lighter;
 }
 
+/* TITLE CARD CSS */
 #title-card {
     position: relative;
     display: block;
@@ -43,17 +45,23 @@ body {
     width: 150px;
 }
 
-table {
+
+/* GAME WINDOW STYLINGS */
+#game-window {
     margin: 0 auto;
+    text-align: center;
+    font-size: 1.2em;
 }
 
-td {
-    padding: 5px 5px;
-    text-align: center;
-    vertical-align: middle;
-    height: 25px;
-    width: 25px;
+#game-window span {
+    display: inline-block;
+    width: 20px;
+    height: 30px;
+    background: #CCFFCC;
+}
 
+#game-window div.row {
+    display: block;
 }
 
 #interface {
@@ -74,11 +82,16 @@ td {
 
 
 /* ICONS */
-.goblin {
+#game-window span.wall {
+    background-color: #eee;
+    color: brown;
+}
+
+#game-window span.goblin {
     color: limegreen;
 }
 
-.troll {
+#game-window span.troll {
     color: brown;
     font-weight: bold;
 }
