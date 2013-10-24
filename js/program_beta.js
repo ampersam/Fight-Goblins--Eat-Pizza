@@ -2,42 +2,49 @@ var monster = null, $monsterCell = null;
 var pizza = null, $pizzaCell = null;
 var player = null, $playerCell = null;
 
-(function app(){
+(function (){
     console.log('script loaded');
 
+    var options = {
+        'controls': {
+            'left': 37, 
+            'up': 38, 
+            'right': 39, 
+            'down': 40,
+            'wait': 91
+        },
+        'gameWindow': {
+            'height': 15,
+            'width': 30
+        }
+    };
+
+    var $gameRows;
     var $gameWindow = $('#game-window');
-    var $gameRows = $gameWindow.find('tr');
-    var arrowKeys = {left: 37, up: 38, right: 39, down: 40};
-    var gameCells = new Array(10);
-    var gameState = new Array(10);
+    var controls = {left: 37, up: 38, right: 39, down: 40};
+    var gameCells = new Array(options.gameWindow.height);
+    var gameState = new Array(options.gameWindow.height);
+    var roomMap = [];
 
     //HUD elements
     var $monsterHUD, $playerHUD;
     $monsterHUD = $('#monster');
-    $playerHUD = $('#player');
+    $playerHUD = $('#interface');
 
     var $playerCurrentHP, $playerMaxHP, $playerXP, $playerLevel;
     $playerCurrentHP = $playerHUD.find('.hp').children('.current');
     $playerMaxHP = $playerHUD.find('.hp').children('.max');
+    // $playerMaxHP = $($playerHUD + ' .hp .max');
     $playerXP = $playerHUD.find('.xp').children();
     $playerLevel = $playerHUD.find('.level').children();
 
-    //set gamestates
-    var gameOver = [['','','', '', '', '', '','','',''],
-                    ['','','','G','A','M','E','','',''],
-                    ['','','','O','V','E','R','','',''],
-                    ['','','', '', '', '', '','','',''],
-                    ['','','', '', '', '', '','','',''],
-                    ['','','', '', '', '', '','','',''],
-                    ['','','', '', '', '', '','','',''],
-                    ['','','', '', '', '', '','','',''],
-                    ['','','', '', '', '', '','','',''],
-                    ['','','', '', '', '', '','','','']];
+
 
     //leveling data
-    var xpArray =    [-10,  0, 10, 23, 38, 55, 70, 90, 150, 215, 340, 440];
-    var maxHPArray = [999, 10, 15, 20, 27, 34, 52, 60,  69,  78,  87,  97];
-    var attackArray = [99,  2,  2,  3,  4,  4,  6,  6,   7,   8,   9,  10];
+                    //   X   1   2   3   4   5   6   7    8    9   10   11
+    var xpArray     = [-10,  0, 10, 23, 38, 55, 70, 90, 150, 215, 340, 440];
+    var maxHPArray  = [999, 10, 15, 20, 27, 34, 52, 60,  69,  78,  87,  97];
+    var attackArray = [ 99,  2,  2,  3,  4,  4,  6,  6,   7,   8,   9,  10];
 
     var Player = function () {
         this.stats = {
@@ -56,7 +63,7 @@ var player = null, $playerCell = null;
         this.turn = 1;
     };
 
-    var Monster = function (type) {
+    var Monster = function () {
         this.stats = {
             'type': null,
             'icon': null,
@@ -88,22 +95,52 @@ var player = null, $playerCell = null;
         };
     };
 
+    var Room = function (w,h,originX,originY) {
+        this.dim = {
+            'w': w,
+            'h': h
+        };
+        this.origin = {
+            'x': originX,
+            'y': originY
+        };
+    };
+
+
+    //Initialization functions
     function initGameArrays() {
         var y, x, $el;
         for (y = 0; y < gameState.length; y += 1) {
-            gameState[y] = ['.','.','.','.','.','.','.','.','.','.'];
+            gameState[y] = [];
+            for (x = 0; x < options.gameWindow.width; x += 1) {
+                gameState[y][x] = '.';
+            }
         }
+        createMap(5);
         for (y = 0; y < gameCells.length; y += 1) {
-            gameCells[y] = new Array(10);
+            gameCells[y] = new Array(options.gameWindow.width);
             for (x = 0; x < gameCells[y].length; x += 1) {
                 gameCells[y][x] = $($gameRows[y]).children().eq(x);
             }
         }
     }
 
-    //gameWindow drawing functions
 
+    function prepTableEl(options) {
+        var i, j;
+        for (i = 0; i <= options.gameWindow.height-1; i += 1) {
+            $gameWindow.append('<tr></tr>');
+        }
+        $gameWindow.find('tr').each(function() {
+            for (j = 0; j < options.gameWindow.width; j += 1) {
+                $(this).append('<td></td>');
+            }
+        });
+    }
+
+    //gameWindow drawing functions
     function drawIcon(icon) {
+        console.log(icon.stats.icon + ": " + icon.pos.x + " " + icon.pos.y);
         gameCells[icon.pos.y][icon.pos.x].html(icon.stats.icon)
                                          .addClass(icon.stats.type);
     }
@@ -127,12 +164,13 @@ var player = null, $playerCell = null;
     }
     */
 
-    function updateGameWindow(array) {
+    function updateGameWindow(state) {
         var y, x;
         //populate table with non-actor cell contents
-        for (y = 0; y < array.length; y += 1) {
-            for (x = 0; x < array[y].length; x += 1) {
-                gameCells[y][x].html(array[y][x]).removeClass();
+        saveMap();
+        for (y = 0; y < state.length; y += 1) {
+            for (x = 0; x < state[y].length; x += 1) {
+                gameCells[y][x].html(state[y][x]).removeClass();
             }
         }
         if (player) {
@@ -148,16 +186,108 @@ var player = null, $playerCell = null;
     }
 
     function updateUI () {
-        if (!monster) {
-            $monsterHUD.hide();
-        } else {
-            $monsterHUD.find('.hp').children().html(monster.stats.hp);
-            $monsterHUD.show();
-        }
         $playerCurrentHP.html(player.stats.hp);
         $playerMaxHP.html(player.stats.maxHP);
         $playerXP.html(Math.floor(player.stats.xp));
         $playerLevel.html(player.stats.level);
+    }
+
+
+    function freshBoot() {
+        $('#title-card').toggle();
+        $gameWindow.toggle();
+        $playerHUD.toggle();
+        $monsterHUD.toggle();
+        if (!player) createNewPlayer();
+        else {
+            player = null;
+            monster = null;
+            pizza = null;
+            $(document).unbind('keydown');
+        }
+    }
+
+
+    //Map Creation
+    function createMap(rooms) {
+        var roomCount = 1;
+        while (roomCount <= rooms) {
+            if (createRoom(getRandomInteger(4,9), getRandomInteger(4,9), roomCount)) roomCount += 1;
+        }
+    }
+
+
+    function createRoom(w,h,counter) {
+        var i = 0;
+        var roomOrigin = [getRandomInteger(0, options.gameWindow.width), getRandomInteger(0, options.gameWindow.height)];
+        var originX = roomOrigin[0];
+        var originY = roomOrigin[1];
+        console.log('premod room stats: (' + originX + ', ' + originY + ') -- ' + w + 'x' + h);
+
+        //if room collides with a boundary let it partially draw
+        if (originX + w > options.gameWindow.width) {
+            w = options.gameWindow.width - originX;
+        }
+        if (originY + h > options.gameWindow.height) {
+            h = options.gameWindow.height - originY;
+        }
+        console.log('postmod room stats: (' + originX + ', ' + originY + ') -- ' + w + 'x' + h);
+
+        //if room collides with another generated room let it partially draw
+        if (roomMap.length > 1) {
+            for (i = 1; i < roomMap.length; i += 1) {
+                var roomTop, roomBottom, roomLeft, roomRight, newRoomTop, newRoomBottom, newRoomRight, newRoomLeft;
+                roomTop = roomMap[i].origin.y;
+                roomBottom = roomMap[i].origin.y + roomMap[i].dim.h - 1;
+                roomLeft = roomMap[i].origin.x;
+                roomRight = roomMap[i].origin.x + roomMap[i].dim.w - 1;
+                newRoomTop = originY;
+                newRoomBottom = originY + h - 1; 
+                newRoomLeft = originX;
+                newRoomRight = originX + w - 1;
+                if (!(newRoomTop > roomBottom) && !(newRoomBottom < roomTop) &&
+                     !(newRoomRight < roomLeft) && !(newRoomLeft > roomRight)) {
+                    console.log('failed: overlap');
+                    return false;
+                }
+            }
+        }
+
+
+        //room-too-small check
+        if (w < 3 || h < 3) {
+            console.log('failed: too small');
+            return false;
+        }
+
+        roomMap[counter] = new Room(w,h,originX,originY);
+        return true;
+    }
+
+    function saveRoom(roomObj) {
+        var i = 0;
+
+        //draw room's horizontal walls
+        while (i != roomObj.dim.w) {
+            gameState[roomObj.origin.y][roomObj.origin.x + i] = '#';
+            gameState[roomObj.origin.y + (roomObj.dim.h - 1)][roomObj.origin.x + i] = '#';
+            i += 1;
+        }
+        i = 1;
+        //draw room's vertical walls
+        while (i != roomObj.dim.h-1) {
+            gameState[roomObj.origin.y + i][roomObj.origin.x] = '#';
+            gameState[roomObj.origin.y + i][roomObj.origin.x + (roomObj.dim.w - 1)] = '#';
+            i += 1;
+        }
+    }
+
+    function saveMap(){
+        var i;
+        for (i = 1; i < roomMap.length; i+=1) {
+            console.log(roomMap);
+            saveRoom(roomMap[i]);
+        }
     }
 
 
@@ -189,8 +319,8 @@ var player = null, $playerCell = null;
 
         //set monster position
         do {
-            monster.pos.x = getRandomInteger(0,9);
-            monster.pos.y = getRandomInteger(0,9);
+            monster.pos.x = getRandomInteger(0,options.gameWindow.width-1);
+            monster.pos.y = getRandomInteger(0,options.gameWindow.height-1);
             $monsterCell = gameCells[monster.pos.y][monster.pos.x];
         } while ($monsterCell.is($playerCell) || 
                 (pizza && $monsterCell.is($pizzaCell)));
@@ -199,8 +329,8 @@ var player = null, $playerCell = null;
     function generatePizza() {
         pizza = new Pizza();
         do {
-            pizza.pos.x = getRandomInteger(0,9);
-            pizza.pos.y = getRandomInteger(0,9);
+            pizza.pos.x = getRandomInteger(0,options.gameWindow.width-1);
+            pizza.pos.y = getRandomInteger(0,options.gameWindow.height-1);
             $pizzaCell = gameCells[pizza.pos.y][pizza.pos.x];
         } while ($pizzaCell.is($playerCell) || 
                  (monster && $pizzaCell.is($monsterCell)));
@@ -218,6 +348,7 @@ var player = null, $playerCell = null;
             }
 
             //does monster see player?
+            //can the monster attack?
             if (checkLOS(player, monster)) {
                 monster.seenPlayer = true;
                 doAttack(player, monster);
@@ -238,7 +369,7 @@ var player = null, $playerCell = null;
             }
             $monsterCell = gameCells[monster.pos.y][monster.pos.x];
 
-            //does monster see player now?
+            //does monster see player post-move?
             if (checkLOS(player,monster)) {
                 monster.seenPlayer = true;
             }
@@ -304,10 +435,11 @@ var player = null, $playerCell = null;
                 } else {
                     newY = getRandomInteger(0,1) ? monsterY + 1 : monsterY - 1;
                 } 
-            } while (!((newX >= 0 && newX <= 9) && (newY >= 0 && newY <= 9)));
+            } while (!((newX >= 0 && newX <= options.gameWindow.width-1) && (newY >= 0 && newY <= options.gameWindow.height-1)));
         }
 
         if (gameCells[newY][newX].is($pizzaCell)) {
+            doAttack(monster,pizza);
             pizza = null;
         }
         monster.pos.y = newY;
@@ -318,17 +450,24 @@ var player = null, $playerCell = null;
     function playerAction(event) {
         if (player) {
             switch (event.which) {
-                case arrowKeys.left:
+                case options.controls.left:
+                    event.preventDefault();
                     playerMove(-1, 0);
                     break;
-                case arrowKeys.right:
+                case options.controls.right:
+                    event.preventDefault();
                     playerMove(1, 0);
                     break;
-                case arrowKeys.up:
+                case options.controls.up:
+                    event.preventDefault();
                     playerMove(0, -1);
                     break;
-                case arrowKeys.down:
+                case options.controls.down:
+                    event.preventDefault();
                     playerMove(0, 1);
+                    break;
+                case options.controls.wait:
+                    event.preventDefault();
                     break;
             }
             $playerCell = gameCells[player.pos.y][player.pos.x];
@@ -343,13 +482,10 @@ var player = null, $playerCell = null;
             //check player level
             checkPlayerLevel();
 
-            //gameover check
+            //gameOver check
             if (player.stats.hp <= 0) {
                 updateUI();
-                player = null;
-                monster = null;
-                pizza = null;
-                updateGameWindow(gameOver);
+                freshBoot();
             } else {
                 updateGameWindow(gameState);
                 updateUI();
@@ -363,8 +499,8 @@ var player = null, $playerCell = null;
 
         //check if monster present in new square
         if (monster && (newX === monster.pos.x && newY === monster.pos.y)) {
-                doAttack(monster, player);
-                return;
+            doAttack(monster, player);
+            return;
         }
 
         //check if pizza is present in new square
@@ -374,10 +510,10 @@ var player = null, $playerCell = null;
         }
 
         //move player
-        if (newX >= 0 && newX <= ($($gameRows[0]).children().length - 1)) {
+        if (newX >= 0 && newX <= (options.gameWindow.width - 1)) {
             player.pos.x = newX;
         }
-        if (newY >= 0 && (newY <= ($gameRows.length - 1))) {
+        if (newY >= 0 && newY <= (options.gameWindow.height - 1)) {
             player.pos.y = newY;
         }
     }
@@ -429,29 +565,21 @@ var player = null, $playerCell = null;
     }
 
 
-    //Utilities
-    function forEach(array, func) {
-        var i;
-        for (i = 0; i < array.length; i += 1) {
-            func(array[i]);
-        }
-    }
-
-    function getRandomInteger(min, max) {
-        return Math.floor(Math.random() * (max-min + 1) + min);
-    }
-
-    function coinFlip(thing1, thing2) {
-        return getRandomInteger(0,1) ? thing1 : thing2;
-    }
 
     $(document).ready(function() {
+        prepTableEl(options);
+        $gameRows = $gameWindow.find('tr');
         initGameArrays();
-        createNewPlayer();
-        console.log('lvlup lvl: ' + player.stats.level + ' atk: ' + player.stats.attack + ' hp: ' + player.stats.maxHP);
-        updateGameWindow(gameState);
 
-        $(document).on('keydown', playerAction);
+        $('#play-button').on('click', function(e) {
+            e.preventDefault();
+            freshBoot();
+            console.log('lvlup lvl: ' + player.stats.level + ' atk: ' + player.stats.attack + ' hp: ' + player.stats.maxHP);
+            updateGameWindow(gameState);
+            $(document).on('keydown', playerAction);
+        });
+
+
     });
 
 })();
