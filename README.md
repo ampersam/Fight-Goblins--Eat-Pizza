@@ -10,7 +10,7 @@ This a procedurally generated roguelike created by an amateur programmer.
 
 It is an attempt to understand the basics of creating dynamically generated content in my preferred medium.
 
-In the initial (and present) version, it was largely table-based with the traditional roguelike grid represented by table cells. Times have changed on the Internet, though.
+In the initial version, it was largely table-based with the traditional roguelike grid represented by table cells. Times have changed on the Internet, though. The future holds a Canvas-based game window for Fight Goblins, Eat Pizza, but that is at least a few weeks out.
 
 #Future Plans
 
