@@ -234,22 +234,12 @@ var player = null, $playerCell = null;
         // console.log('postmod room stats: (' + originX + ', ' + originY + ') -- ' + w + 'x' + h);
 
         //if room collides with another generated room let it partially draw
-        if (roomMap.length > 1) {
-            for (i = 1; i < roomMap.length; i += 1) {
-                var roomTop, roomBottom, roomLeft, roomRight, newRoomTop, newRoomBottom, newRoomRight, newRoomLeft;
-                roomTop = roomMap[i].origin.y;
-                roomBottom = roomMap[i].origin.y + roomMap[i].dim.h - 1;
-                roomLeft = roomMap[i].origin.x;
-                roomRight = roomMap[i].origin.x + roomMap[i].dim.w - 1;
-                newRoomTop = originY;
-                newRoomBottom = originY + h - 1; 
-                newRoomLeft = originX;
-                newRoomRight = originX + w - 1;
-                if (!(newRoomTop > roomBottom) && !(newRoomBottom < roomTop) &&
-                     !(newRoomRight < roomLeft) && !(newRoomLeft > roomRight)) {
-                    console.log('failed: overlap');
-                    return false;
-                }
+        //placeholder room is inflated to prevent the creation of blocked squares
+        var tempRoom = new Room(w+2,h+2,originX-1,originY-1);
+        for (i = 1; i < roomMap.length; i += 1) {
+            if (checkOverlap(tempRoom, roomMap)) {
+                console.log('room overlap');
+                return false;
             }
         }
 
@@ -530,6 +520,9 @@ var player = null, $playerCell = null;
             return;
         }
 
+        //hacky solution to removeClass as player moves
+        gameCells[player.pos.y][player.pos.x].removeClass('player');
+
         //move player
         if (newPos.pos.x >= 0 && newPos.pos.x <= (options.gameWindow.width - 1)) {
             player.pos.x = newPos.pos.x;
@@ -636,10 +629,6 @@ var player = null, $playerCell = null;
             results.right = object.origin.x + object.dim.w - 1;
         }
         return results;
-    }
-
-    function checkRoomSafeOverlap(room1,room2) {
-
     }
 
 

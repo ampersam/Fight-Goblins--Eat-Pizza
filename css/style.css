@@ -105,6 +105,9 @@ body {
     font-weight: bold;
 }
 
-.pizza {
+#game-window span.pizza {
     color: red;
+}
+#game-window span.player {
+    color: black;
 }
