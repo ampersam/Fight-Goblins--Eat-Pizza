@@ -467,6 +467,9 @@ var player = null, $playerCell = null;
                 case options.controls.wait:
                     event.preventDefault();
                     break;
+                default:
+                    return;
+                    break;
             }
             $playerCell = gameCells[player.pos.y][player.pos.x];
             player.turn += 1;
