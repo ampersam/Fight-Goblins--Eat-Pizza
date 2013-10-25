@@ -111,17 +111,6 @@ var player = null, $playerCell = null;
     function initGameArrays() {
         var y, x, $el;
 
-        //init the gameState from which all game data is created, modified, and create
-        for (y = 0; y < gameState.length; y += 1) {
-            gameState[y] = [];
-            for (x = 0; x < options.gameWindow.width; x += 1) {
-                gameState[y][x] = '&#183;';
-            }
-        }
-
-        //roomMap creation (still in beta)
-        createMap(5);
-
         //create the matrix of jquery objects representing each cell in the grid
         for (y = 0; y < gameCells.length; y += 1) {
             gameCells[y] = new Array(options.gameWindow.width);
@@ -129,6 +118,20 @@ var player = null, $playerCell = null;
                 gameCells[y][x] = $($gameRows[y]).children().eq(x);
             }
         }
+
+        //init the gameState from which all game data is created, modified, and create
+        for (y = 0; y < gameState.length; y += 1) {
+            gameState[y] = [];
+            for (x = 0; x < options.gameWindow.width; x += 1) {
+                gameState[y][x] = '&#183;';
+                gameCells[y][x].addClass('green-' + getRandomInteger(1,2));
+            }
+        }
+
+        //roomMap creation (still in beta)
+        createMap(5);
+
+
     }
 
     function createGameWindowEl (options) {
@@ -141,8 +144,6 @@ var player = null, $playerCell = null;
             }
             $gameWindow.append(_$row);
         }
-
-        console.log($gameWindow.children());
     }
 
     //gameWindow drawing functions
@@ -157,12 +158,20 @@ var player = null, $playerCell = null;
         saveMap();
         for (y = 0; y < state.length; y += 1) {
             for (x = 0; x < state[y].length; x += 1) {
-                gameCells[y][x].html(state[y][x]).removeClass();
+                if (state[y][x] !=='.') {
+                    console.log('y');
+                    gameCells[y][x].html(state[y][x]);
+                }
+
+                //hacky cell coloring
                 if (state[y][x] === '#') {
                     gameCells[y][x].addClass('wall');
                 }
+
             }
         }
+
+        //icon drawing
         if (player) {
             if (monster) {
                 drawIcon(monster);
@@ -172,6 +181,7 @@ var player = null, $playerCell = null;
             }
             drawIcon(player);
         }
+
         updateUI();
     }
 
@@ -436,6 +446,10 @@ var player = null, $playerCell = null;
             doAttack(monster,pizza);
             pizza = null;
         }
+
+        //hacky removeClass at the moment
+        gameCells[monster.pos.y][monster.pos.x].removeClass(monster.stats.type);
+
         monster.pos.y = newPos.pos.y;
         monster.pos.x = newPos.pos.x;
     }
@@ -623,6 +637,11 @@ var player = null, $playerCell = null;
         }
         return results;
     }
+
+    function checkRoomSafeOverlap(room1,room2) {
+
+    }
+
 
 
     $(document).ready(function() {

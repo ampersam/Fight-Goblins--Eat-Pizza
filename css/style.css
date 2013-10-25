@@ -57,7 +57,6 @@ body {
     display: inline-block;
     width: 20px;
     height: 30px;
-    background: #CCFFCC;
 }
 
 #game-window div.row {
@@ -78,6 +77,16 @@ body {
 .line-of-sight {
     background-color: rgba(100,100,255,.15);
 
+}
+
+
+
+/* ENVIRONMENT */
+#game-window span.green-1 {
+    background-color: #C7F4C7;
+}
+#game-window span.green-2 {
+    background-color: #CFFFCF;
 }
 
 
