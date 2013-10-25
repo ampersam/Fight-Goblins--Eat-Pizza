@@ -12,6 +12,12 @@ body {
     font-weight: lighter;
 }
 
+footer {
+    font-size: .65em;
+    text-align: center;
+    margin-top: 200px;
+}
+
 /* TITLE CARD CSS */
 #title-card {
     position: relative;
