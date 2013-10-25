@@ -57,6 +57,7 @@ body {
     display: inline-block;
     width: 20px;
     height: 30px;
+    color: gray;
 }
 
 #game-window div.row {
@@ -87,6 +88,9 @@ body {
 }
 #game-window span.green-2 {
     background-color: #CFFFCF;
+}
+#game-window span.green-3 {
+    background-color: #C1EEC1;
 }
 
 

@@ -124,7 +124,7 @@ var player = null, $playerCell = null;
             gameState[y] = [];
             for (x = 0; x < options.gameWindow.width; x += 1) {
                 gameState[y][x] = '&#183;';
-                gameCells[y][x].addClass('green-' + getRandomInteger(1,2));
+                gameCells[y][x].addClass('green-' + getRandomInteger(1,3));
             }
         }
 
