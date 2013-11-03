@@ -369,10 +369,10 @@ var player = null, $playerCell = null;
             //if monster has seen player but not acted, monster move towards player
             if (!monster.hasActed) {
                 if (monster.seenPlayer) {
-                    monsterMove(player);
+                    while (!monsterMove(player)) {};
                     monster.hasActed = true;
                 } else {
-                    monsterMove();
+                    while (!monsterMove());
                     monster.hasActed = true;
                 }
             }
@@ -434,6 +434,11 @@ var player = null, $playerCell = null;
                     if (getRandomInteger(0,1)) newPos.pos.x = monsterX - 1;
                     else newPos.pos.y = monsterY + 1;
                 }
+
+                if (checkOverlap(newPos, roomMap)) {
+                    console.log('corner\'d');
+                    return false;
+                }
             }
         } else {
             //randomized movement
@@ -458,6 +463,7 @@ var player = null, $playerCell = null;
 
         monster.pos.y = newPos.pos.y;
         monster.pos.x = newPos.pos.x;
+        return true;
     }
 
     //Player Functions
