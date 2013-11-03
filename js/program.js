@@ -159,13 +159,15 @@ var player = null, $playerCell = null;
         for (y = 0; y < state.length; y += 1) {
             for (x = 0; x < state[y].length; x += 1) {
                 if (state[y][x] !=='.') {
-                    console.log('y');
                     gameCells[y][x].html(state[y][x]);
                 }
 
                 //hacky cell coloring
                 if (state[y][x] === '#') {
                     gameCells[y][x].addClass('wall');
+                }
+                else if (state[y][x] === '\+') {
+                    gameCells[y][x].addClass('black');
                 }
 
             }
@@ -270,6 +272,18 @@ var player = null, $playerCell = null;
             gameState[roomObj.origin.y + i][roomObj.origin.x + (roomObj.dim.w - 1)] = '#';
             i += 1;
         }
+
+        //fill in obstructed tiles with '+'
+        fillInRoom(roomObj);
+    }
+
+    function fillInRoom (roomObj) {
+        var _row, _cell;
+        for (_row = roomObj.origin.y + 1; _row < (roomObj.origin.y + roomObj.dim.h - 1); _row += 1 ) {
+            for (_cell = roomObj.origin.x + 1; _cell < (roomObj.origin.x + roomObj.dim.w - 1); _cell += 1) {
+                gameState[_row][_cell] = '\+';
+            }
+        }
     }
 
     function saveMap(){
@@ -337,6 +351,8 @@ var player = null, $playerCell = null;
             if (monster.stats.hp <= 0) {
                 player.stats.xp += monster.stats.xpVal;
                 monster = null;
+                gameCells[monster.pos.y][monster.pos.x].removeClass(monster.stats.type)
+                    .addClass(monster.stats.type + '-blood');
                 return;
             }
 
@@ -432,7 +448,7 @@ var player = null, $playerCell = null;
             } while (!((newPos.pos.x >= 0 && newPos.pos.x <= options.gameWindow.width-1) && (newPos.pos.y >= 0 && newPos.pos.y <= options.gameWindow.height-1)) || checkOverlap(newPos, roomMap));
         }
 
-        if (gameCells[newPos.pos.y][newPos.pos.x].is($pizzaCell)) {
+        if (pizza && gameCells[newPos.pos.y][newPos.pos.x].is($pizzaCell)) {
             doAttack(monster,pizza);
             pizza = null;
         }
@@ -515,6 +531,8 @@ var player = null, $playerCell = null;
         //check if pizza is present in new square
         if (pizza && checkOverlap(pizza, newPos)) {
             doAttack(player, pizza);
+            gameCells[pizza.pos.y][pizza.pos.x].removeClass('pizza')
+                .addClass('pizza-blood');
             pizza = null;
         }
 
@@ -630,7 +648,7 @@ var player = null, $playerCell = null;
             results.bottom = object.origin.y + object.dim.h - 1;
             results.left = object.origin.x;
             results.right = object.origin.x + object.dim.w - 1;
-        }
+        } 
         return results;
     }
 
@@ -648,7 +666,6 @@ var player = null, $playerCell = null;
             updateGameWindow(gameState);
             $(document).on('keydown', playerAction);
         });
-
 
     });
 
