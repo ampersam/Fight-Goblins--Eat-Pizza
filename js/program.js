@@ -11,7 +11,7 @@ var player = null, $playerCell = null;
             'up': 38, 
             'right': 39, 
             'down': 40,
-            'wait': 91
+            'wait': 190
         },
         'gameWindow': {
             'height': 15,
@@ -369,10 +369,10 @@ var player = null, $playerCell = null;
             //if monster has seen player but not acted, monster move towards player
             if (!monster.hasActed) {
                 if (monster.seenPlayer) {
-                    while (!monsterMove(player)) {};
+                    while (!monsterMove(player));
                     monster.hasActed = true;
                 } else {
-                    while (!monsterMove()) {};
+                    while (!monsterMove());
                     monster.hasActed = true;
                 }
             }
