@@ -99,25 +99,31 @@ footer {
     background-color: #C1EEC1;
 }
 
+#game-window span.black {
+    color: black;
+    background: black;
+}
+
 
 /* ICONS */
-#game-window span.wall {
+#game-window div span.wall {
     background-color: #eee;
     color: brown;
-}
-
-#game-window span.goblin {
-    color: limegreen;
-}
-
-#game-window span.troll {
-    color: brown;
-    font-weight: bold;
 }
 
 #game-window span.pizza {
     color: red;
 }
-#game-window span.player {
+
+#game-window div span.goblin {
+    color: limegreen;
+}
+
+#game-window div span.troll {
+    color: brown;
+    font-weight: bold;
+}
+
+#game-window div span.player {
     color: black;
 }
