@@ -56,7 +56,7 @@ footer {
 #game-window {
     margin: 0 auto;
     text-align: center;
-    font-size: 1.2em;
+    font-size: 1.7em;
 }
 
 #game-window span {
@@ -64,6 +64,7 @@ footer {
     width: 20px;
     height: 30px;
     color: gray;
+    vertical-align: middle;
 }
 
 #game-window div.row {
@@ -105,9 +106,22 @@ footer {
 }
 
 
+/* BLOODSTAINS */
+#game-window div span.pizza-blood {
+    color: red;
+}
+
+#game-window div span.goblin-blood {
+    color: green;
+}
+
+#game-window div span.troll-blood {
+    color: green;
+}
+
 /* ICONS */
 #game-window div span.wall {
-    background-color: #eee;
+    background-color: #888;
     color: brown;
 }
 
