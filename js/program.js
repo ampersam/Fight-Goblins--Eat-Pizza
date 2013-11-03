@@ -372,7 +372,7 @@ var player = null, $playerCell = null;
                     while (!monsterMove(player)) {};
                     monster.hasActed = true;
                 } else {
-                    while (!monsterMove());
+                    while (!monsterMove()) {};
                     monster.hasActed = true;
                 }
             }
@@ -488,6 +488,9 @@ var player = null, $playerCell = null;
                     break;
                 case options.controls.wait:
                     event.preventDefault();
+                    break;
+                default:
+                    return;
                     break;
             }
             $playerCell = gameCells[player.pos.y][player.pos.x];
