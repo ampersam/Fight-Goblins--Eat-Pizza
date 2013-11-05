@@ -1,3 +1,4 @@
+var listofMonsters = [];
 var monster = null, $monsterCell = null;
 var pizza = null, $pizzaCell = null;
 var player = null, $playerCell = null;
@@ -27,8 +28,7 @@ var player = null, $playerCell = null;
     var roomMap = [];
 
     //HUD elements
-    var $monsterHUD, $playerHUD;
-    $monsterHUD = $('#monster');
+    var $playerHUD;
     $playerHUD = $('#interface');
 
     var $playerCurrentHP, $playerMaxHP, $playerXP, $playerLevel;
@@ -78,6 +78,7 @@ var player = null, $playerCell = null;
             'x': null,
             'y': null
         };
+        this.monsterID = null;
         this.turn = 1;
         this.seenPlayer = false;
         this.hasActed = false;
@@ -175,6 +176,8 @@ var player = null, $playerCell = null;
 
         //icon drawing
         if (player) {
+
+            // TODO iterate through the list of monsters to draw instead of drawing just the one
             if (monster) {
                 drawIcon(monster);
             }
@@ -199,11 +202,10 @@ var player = null, $playerCell = null;
         $('#title-card').toggle();
         $gameWindow.toggle();
         $playerHUD.toggle();
-        $monsterHUD.toggle();
         if (!player) createNewPlayer();
         else {
             player = null;
-            monster = null;
+            listofMonsters = [];
             pizza = null;
             $(document).unbind('keydown');
         }
@@ -295,6 +297,7 @@ var player = null, $playerCell = null;
 
 
     //AI Functions
+    // TODO update for multiple monsters, mostly just checking collisions
     function generateMonster (type) {
         monster = new Monster();
         switch (type) {
@@ -343,6 +346,8 @@ var player = null, $playerCell = null;
                 );
     }
 
+
+    // TODO rewrite to checkMonsterState so that it can iterate for each monster in listofMonsters
     function checkAIState() {
         if (monster) {
             monster.hasActed = false;
@@ -395,6 +400,8 @@ var player = null, $playerCell = null;
         }
     }
 
+
+    // TODO figure out how to have monsters move responsively to each other lol
     function monsterMove(playerObj) {
         var monsterX, monsterY, playerX, playerY;
         var newPos = {'pos':{}};
@@ -435,9 +442,15 @@ var player = null, $playerCell = null;
                     else newPos.pos.y = monsterY + 1;
                 }
 
+                //did player move around a corner? find the movement that doesn't involve cutting the corner
                 if (checkOverlap(newPos, roomMap)) {
                     console.log('corner\'d');
                     return false;
+                }
+
+                //did another monster move into that space first?
+                if checkOverlap(newPos, listofMonsters) {
+
                 }
             }
         } else {
@@ -497,7 +510,9 @@ var player = null, $playerCell = null;
             player.turn += 1;
 
             //begin AI checks
+            // TODO rewrite for multiple monsters; perhaps extract out of playerAction?
             checkAIState();
+
             if (!pizza && player.turn % 10 === 0) {
                 generatePizza();
             }
@@ -530,6 +545,7 @@ var player = null, $playerCell = null;
 
 
         //check if monster present in new square
+        // TODO check against monsterList instead of single monster
         if (monster && checkOverlap(monster, newPos)) {
             doAttack(monster, player);
             return;
