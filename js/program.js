@@ -350,9 +350,9 @@ var player = null, $playerCell = null;
             //is monster dead?
             if (monster.stats.hp <= 0) {
                 player.stats.xp += monster.stats.xpVal;
-                monster = null;
                 gameCells[monster.pos.y][monster.pos.x].removeClass(monster.stats.type)
                     .addClass(monster.stats.type + '-blood');
+                monster = null;
                 return;
             }
 
@@ -508,6 +508,7 @@ var player = null, $playerCell = null;
             //gameOver check
             if (player.stats.hp <= 0) {
                 updateUI();
+                gameCells[player.pos.y][player.pos.x].removeClass('player');
                 freshBoot();
             } else {
                 updateGameWindow(gameState);
