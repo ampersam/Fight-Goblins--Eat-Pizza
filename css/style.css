@@ -116,7 +116,7 @@ footer {
 }
 
 #game-window div span.troll-blood {
-    color: green;
+    color: brown;
 }
 
 /* ICONS */
@@ -125,7 +125,7 @@ footer {
     color: brown;
 }
 
-#game-window span.pizza {
+#game-window div span.pizza {
     color: red;
 }
 
