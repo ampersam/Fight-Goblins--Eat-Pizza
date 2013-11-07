@@ -1,5 +1,4 @@
-var listofMonsters = [];
-var monster = null, $monsterCell = null;
+var monsterList = [];
 var pizza = null, $pizzaCell = null;
 var player = null, $playerCell = null;
 
@@ -154,20 +153,22 @@ var player = null, $playerCell = null;
     }
 
     function updateGameWindow(state) {
-        var y, x;
+        var y, x, currentBlock;
+
         //populate table with non-actor cell contents
-        saveMap();
+        saveMap();  //bind the roomMap to the gameState
         for (y = 0; y < state.length; y += 1) {
             for (x = 0; x < state[y].length; x += 1) {
-                if (state[y][x] !=='.') {
-                    gameCells[y][x].html(state[y][x]);
+                currentBlock = state[y][x];
+                if (currentBlock !=='.') {
+                    gameCells[y][x].html(currentBlock);
                 }
 
-                //hacky cell coloring
-                if (state[y][x] === '#') {
+                //content-based cell coloring for non-icons
+                if (currentBlock === '#') {
                     gameCells[y][x].addClass('wall');
                 }
-                else if (state[y][x] === '\+') {
+                else if (currentBlock === '\+') {
                     gameCells[y][x].addClass('black');
                 }
 
@@ -177,9 +178,8 @@ var player = null, $playerCell = null;
         //icon drawing
         if (player) {
 
-            // TODO iterate through the list of monsters to draw instead of drawing just the one
-            if (monster) {
-                drawIcon(monster);
+            if (monsterList.length) {
+                forEach(monsterList, drawIcon);
             }
             if (pizza) {
                 drawIcon(pizza);
@@ -205,7 +205,7 @@ var player = null, $playerCell = null;
         if (!player) createNewPlayer();
         else {
             player = null;
-            listofMonsters = [];
+            monsterList = [];
             pizza = null;
             $(document).unbind('keydown');
         }
@@ -275,7 +275,7 @@ var player = null, $playerCell = null;
             i += 1;
         }
 
-        //fill in obstructed tiles with '+'
+        //fill in obstructed tiles inside walls with '+'
         fillInRoom(roomObj);
     }
 
@@ -297,41 +297,58 @@ var player = null, $playerCell = null;
 
 
     //AI Functions
-    // TODO update for multiple monsters, mostly just checking collisions
-    function generateMonster (type) {
-        monster = new Monster();
+    function generateMonster () {
+        var monster = new Monster();
+        var type;
+
+        // TODO rewrite generation selection
+       if (player.turn % 5 === 0) {
+            if (player.stats.level > 3 && getRandomInteger(0,1)) {
+                type = 'troll';
+            } else {
+                type = 'goblin';
+            }
+        } else {
+            type = null;
+        }
+
         switch (type) {
             case 'goblin':
                 monster.stats.attack = 1;
-                monster.stats.facing = 'W';
                 monster.stats.type = 'goblin';
                 monster.stats.icon = 'g';
                 monster.stats.hp = getRandomInteger(5,20);
-                monster.stats.maxHP = monster.stats.hp;
                 monster.stats.xpVal = 3 + (monster.stats.hp)/4;
                 break;
 
             case 'troll':
                 monster.stats.attack = getRandomInteger(0,1) ? 2 : 3;
-                monster.stats.facing = 'W';
                 monster.stats.type = 'troll';
                 monster.stats.icon = 'T';
                 monster.stats.hp = getRandomInteger(15,40);
-                monster.stats.maxHP = monster.stats.hp;
+
                 monster.stats.xpVal = 5 + (monster.stats.hp)/4;
                 break;
-
+            default:
+                return;
         }
+        //universals
+        monster.stats.maxHP = monster.stats.hp;
+        monster.monsterID = monsterList.length;
 
         //set monster position
         do {
             monster.pos.x = getRandomInteger(0,options.gameWindow.width-1);
             monster.pos.y = getRandomInteger(0,options.gameWindow.height-1);
-            $monsterCell = gameCells[monster.pos.y][monster.pos.x];
-        } while ((checkOverlap(player, monster)) || 
-                 (pizza && checkOverlap(pizza, monster)) ||
-                 (checkOverlap(monster, roomMap))
+        } while (
+                    checkOverlap(monster, player) || 
+                    (pizza && checkOverlap(pizza, monster)) ||
+                    checkOverlap(monster, roomMap) ||
+                    (monsterList.length && checkOverlap(monster, monsterList))
                 );
+
+        //add monster to the array of monsters
+        monsterList.push(monster);
     }
 
     function generatePizza() {
@@ -340,69 +357,76 @@ var player = null, $playerCell = null;
             pizza.pos.x = getRandomInteger(0,options.gameWindow.width-1);
             pizza.pos.y = getRandomInteger(0,options.gameWindow.height-1);
             $pizzaCell = gameCells[pizza.pos.y][pizza.pos.x];
-        } while ((checkOverlap(pizza, player)) || 
-                 (monster && checkOverlap(pizza, monster)) ||
-                 (checkOverlap(pizza, roomMap))
+        } while (
+                    checkOverlap(pizza, player) || 
+                    (monsterList.length && checkOverlap(pizza, monsterList)) ||
+                    checkOverlap(pizza, roomMap)
                 );
     }
 
+    function checkMonsterState(monster) {
+        monster.hasActed = false;
 
-    // TODO rewrite to checkMonsterState so that it can iterate for each monster in listofMonsters
-    function checkAIState() {
-        if (monster) {
-            monster.hasActed = false;
+        //is monster dead?
+        if (monster.stats.hp <= 0) {
+            player.stats.xp += monster.stats.xpVal;
+            gameCells[monster.pos.y][monster.pos.x].removeClass(monster.stats.type)
+                .addClass(monster.stats.type + '-blood');
+            return false;
+        }
 
-            //is monster dead?
-            if (monster.stats.hp <= 0) {
-                player.stats.xp += monster.stats.xpVal;
-                gameCells[monster.pos.y][monster.pos.x].removeClass(monster.stats.type)
-                    .addClass(monster.stats.type + '-blood');
-                monster = null;
-                return;
-            }
+        //does monster see player?
+        //can the monster attack?
+        if (checkLOS(player, monster)) {
+            monster.seenPlayer = true;
+            doAttack(player, monster);
+            monster.hasActed = true;
+        }
 
-            //does monster see player?
-            //can the monster attack?
-            if (checkLOS(player, monster)) {
-                monster.seenPlayer = true;
-                doAttack(player, monster);
+        //how does monster move?
+        //if monster has not seen player, move randomly
+        //if monster has seen player but not acted, monster move towards player
+        if (!monster.hasActed) {
+            if (monster.seenPlayer) {
+                while (!monsterMove(monster, player));
+                monster.hasActed = true;
+            } else {
+                while (!monsterMove(monster));
                 monster.hasActed = true;
             }
+        }
 
-            //how does monster move?
-            //if monster has not seen player, move randomly
-            //if monster has seen player but not acted, monster move towards player
-            if (!monster.hasActed) {
-                if (monster.seenPlayer) {
-                    while (!monsterMove(player));
-                    monster.hasActed = true;
-                } else {
-                    while (!monsterMove());
-                    monster.hasActed = true;
+        //does monster see player post-move?
+        if (checkLOS(player,monster)) {
+            monster.seenPlayer = true;
+        }
+
+        monster.turn += 1;
+        return true;
+    }
+
+    function monsterMash () {
+        var _id;
+
+        //check if the monster printer is ready
+        generateMonster();
+
+        for (_id = 0; _id < monsterList.length; _id += 1) {
+            if (monsterList[_id]) {
+
+                //run checkMonsterState for each monster and let it act
+                //if checkMonsterState returns false, monster has died and should be deleted :(
+                if (!checkMonsterState(monsterList[_id])) {
+                    delete monsterList[_id];
                 }
-            }
-            $monsterCell = gameCells[monster.pos.y][monster.pos.x];
 
-            //does monster see player post-move?
-            if (checkLOS(player,monster)) {
-                monster.seenPlayer = true;
-            }
-
-            monster.turn += 1;
-        } 
-        else if (player.turn % 5 === 0) {
-            if (player.stats.level > 3 && getRandomInteger(0,1)) {
-
-                generateMonster('troll');
-            } else {
-                generateMonster('goblin');
             }
         }
     }
 
 
     // TODO figure out how to have monsters move responsively to each other lol
-    function monsterMove(playerObj) {
+    function monsterMove(monster, playerObj) {
         var monsterX, monsterY, playerX, playerY;
         var newPos = {'pos':{}};
         monsterX = monster.pos.x;
@@ -411,7 +435,7 @@ var player = null, $playerCell = null;
         newPos.pos.x = monsterX;
         newPos.pos.y = monsterY;
 
-        if (arguments[0]) {
+        if (arguments[1]) {
             playerX = playerObj.pos.x;
             playerY = playerObj.pos.y;
 
@@ -444,13 +468,12 @@ var player = null, $playerCell = null;
 
                 //did player move around a corner? find the movement that doesn't involve cutting the corner
                 if (checkOverlap(newPos, roomMap)) {
-                    console.log('corner\'d');
                     return false;
                 }
 
                 //did another monster move into that space first?
-                if checkOverlap(newPos, listofMonsters) {
-
+                if (checkOverlap(newPos, monsterList)) {
+                    return true;
                 }
             }
         } else {
@@ -463,7 +486,14 @@ var player = null, $playerCell = null;
                 } else {
                     newPos.pos.y = getRandomInteger(0,1) ? monsterY + 1 : monsterY - 1;
                 } 
-            } while (!((newPos.pos.x >= 0 && newPos.pos.x <= options.gameWindow.width-1) && (newPos.pos.y >= 0 && newPos.pos.y <= options.gameWindow.height-1)) || checkOverlap(newPos, roomMap));
+            } while (
+                !(
+                    (newPos.pos.x >= 0 && newPos.pos.x <= options.gameWindow.width-1) && 
+                    (newPos.pos.y >= 0 && newPos.pos.y <= options.gameWindow.height-1)
+                ) || 
+                checkOverlap(newPos, roomMap) ||
+                checkOverlap(newPos, monsterList)
+            );
         }
 
         if (pizza && gameCells[newPos.pos.y][newPos.pos.x].is($pizzaCell)) {
@@ -504,14 +534,12 @@ var player = null, $playerCell = null;
                     break;
                 default:
                     return;
-                    break;
             }
             $playerCell = gameCells[player.pos.y][player.pos.x];
             player.turn += 1;
 
             //begin AI checks
-            // TODO rewrite for multiple monsters; perhaps extract out of playerAction?
-            checkAIState();
+            monsterMash();
 
             if (!pizza && player.turn % 10 === 0) {
                 generatePizza();
@@ -545,10 +573,13 @@ var player = null, $playerCell = null;
 
 
         //check if monster present in new square
-        // TODO check against monsterList instead of single monster
-        if (monster && checkOverlap(monster, newPos)) {
-            doAttack(monster, player);
-            return;
+        if (monsterList.length) {
+            forEach(monsterList, function (monster) {
+                if (checkOverlap(monster,newPos)) {
+                    doAttack(monster, player);
+                    return;
+                }
+            });
         }
 
         //check if pizza is present in new square
