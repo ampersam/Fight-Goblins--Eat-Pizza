@@ -249,7 +249,6 @@ var player = null, $playerCell = null;
         var tempRoom = new Room(w+2,h+2,originX-1,originY-1);
         for (i = 1; i < roomMap.length; i += 1) {
             if (checkOverlap(tempRoom, roomMap)) {
-                console.log('room overlap');
                 return false;
             }
         }
@@ -257,7 +256,6 @@ var player = null, $playerCell = null;
 
         //room-too-small check
         if (w < 3 || h < 3) {
-            console.log('failed: too small');
             return false;
         }
 
@@ -310,7 +308,7 @@ var player = null, $playerCell = null;
 
         // TODO rewrite generation selection
        if (player.turn % 13 === 0) {
-            if (player.stats.level > 3 && getRandomInteger(0,(playerlevel/4))) {
+            if (player.stats.level > 3 && getRandomInteger(0,(player.stats.level/4))) {
                 type = 'troll';
             } else {
                 type = 'goblin';
@@ -337,7 +335,7 @@ var player = null, $playerCell = null;
                 monster.stats.xpVal = 5 + (monster.stats.hp)/4;
                 break;
             default:
-                return;
+                return false;
         }
         //universals
         monster.stats.maxHP = monster.stats.hp;
@@ -357,6 +355,7 @@ var player = null, $playerCell = null;
 
         //add monster to the array of monsters
         monsterList.push(monster);
+        return true;
     }
 
     function generatePizza() {
@@ -511,7 +510,6 @@ var player = null, $playerCell = null;
         //waiting a beat seems to work; makes them follow organically but needs playtesting
         for (var _monster = 0; _monster < monsterList.length; _monster += 1) {
             if (checkOverlap(newPos, monsterList[_monster])) {
-                console.log('monster overlap');
                 return true;
             }
         }
@@ -591,7 +589,6 @@ var player = null, $playerCell = null;
         if (monsterList.length) {
             for (_monster = 0; _monster < monsterList.length; _monster += 1) {
                 if (checkOverlap(newPos, monsterList[_monster])) {
-                    console.log('attack');
                     doAttack(monsterList[_monster], player);
                     return;
                 }
@@ -639,7 +636,6 @@ var player = null, $playerCell = null;
             player.stats.level += 1;
             player.stats.maxHP = maxHPArray[player.stats.level];
             player.stats.attack = attackArray[player.stats.level];
-            console.log(player.stats.level + ' ' + maxHPArray[player.stats.level]);
             console.log('lvlup lvl: ' + player.stats.level + ' atk: ' + player.stats.attack + ' hp: ' + player.stats.maxHP);
         }
     }
@@ -728,7 +724,6 @@ var player = null, $playerCell = null;
         $('#play-button').on('click', function(e) {
             e.preventDefault();
             freshBoot();
-            console.log('lvlup lvl: ' + player.stats.level + ' atk: ' + player.stats.attack + ' hp: ' + player.stats.maxHP);
             updateGameWindow(gameState);
             $(document).on('keydown', playerAction);
         });
