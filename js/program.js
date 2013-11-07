@@ -417,7 +417,7 @@ var player = null, $playerCell = null;
                 //run checkMonsterState for each monster and let it act
                 //if checkMonsterState returns false, monster has died and should be deleted :(
                 if (!checkMonsterState(monsterList[_id])) {
-                    delete monsterList[_id];
+                    monsterList.slice(_id, 1)
                 }
 
             }
@@ -561,7 +561,7 @@ var player = null, $playerCell = null;
     }
 
     function playerMove(x,y) {
-        var roomI;
+        var roomI, _monster;
         var newPos = {
             'pos': {
                 'x': null, 
@@ -574,12 +574,13 @@ var player = null, $playerCell = null;
 
         //check if monster present in new square
         if (monsterList.length) {
-            forEach(monsterList, function (monster) {
-                if (checkOverlap(monster,newPos)) {
-                    doAttack(monster, player);
+            for (_monster = 0; _monster < monsterList.length; _monster += 1) {
+                if (checkOverlap(newPos, monsterList[_monster])) {
+                    console.log('attack');
+                    doAttack(monsterList[_monster], player);
                     return;
                 }
-            });
+            }
         }
 
         //check if pizza is present in new square
