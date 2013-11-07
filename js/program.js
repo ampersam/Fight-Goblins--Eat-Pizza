@@ -25,6 +25,7 @@ var player = null, $playerCell = null;
     var gameCells = new Array(options.gameWindow.height);
     var gameState = new Array(options.gameWindow.height);
     var roomMap = [];
+    var monsterCount = 0;
 
     //HUD elements
     var $playerHUD;
@@ -302,7 +303,7 @@ var player = null, $playerCell = null;
         var type;
 
         // TODO rewrite generation selection
-       if (player.turn % 5 === 0) {
+       if (player.turn % 10 === 0) {
             if (player.stats.level > 3 && getRandomInteger(0,1)) {
                 type = 'troll';
             } else {
@@ -334,7 +335,8 @@ var player = null, $playerCell = null;
         }
         //universals
         monster.stats.maxHP = monster.stats.hp;
-        monster.monsterID = monsterList.length;
+        monster.monsterID = monster.stats.type + '#' + monsterCount;
+        monsterCount += 1;
 
         //set monster position
         do {
@@ -417,7 +419,7 @@ var player = null, $playerCell = null;
                 //run checkMonsterState for each monster and let it act
                 //if checkMonsterState returns false, monster has died and should be deleted :(
                 if (!checkMonsterState(monsterList[_id])) {
-                    monsterList.slice(_id, 1)
+                    monsterList.splice(_id, 1);
                 }
 
             }
@@ -471,10 +473,8 @@ var player = null, $playerCell = null;
                     return false;
                 }
 
-                //did another monster move into that space first?
-                if (checkOverlap(newPos, monsterList)) {
-                    return true;
-                }
+
+
             }
         } else {
             //randomized movement
@@ -499,6 +499,14 @@ var player = null, $playerCell = null;
         if (pizza && gameCells[newPos.pos.y][newPos.pos.x].is($pizzaCell)) {
             doAttack(monster,pizza);
             pizza = null;
+        }
+
+        //did another monster move into that space first?
+        for (var _monster = 0; _monster < monsterList.length; _monster += 1) {
+            if (checkOverlap(newPos, monsterList[_monster])) {
+                console.log('monster overlap');
+                return true;
+            }
         }
 
         //hacky removeClass at the moment
