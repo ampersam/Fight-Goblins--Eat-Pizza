@@ -200,6 +200,12 @@ var player = null, $playerCell = null;
 
 
     function freshBoot() {
+        if ($gameRows) {
+            $gameRows.children().removeClass();
+        }
+        createGameWindowEl(options);
+        $gameRows = $gameWindow.find('.row');
+        initGameArrays();
         $('#title-card').toggle();
         $gameWindow.toggle();
         $playerHUD.toggle();
@@ -303,8 +309,8 @@ var player = null, $playerCell = null;
         var type;
 
         // TODO rewrite generation selection
-       if (player.turn % 10 === 0) {
-            if (player.stats.level > 3 && getRandomInteger(0,1)) {
+       if (player.turn % 13 === 0) {
+            if (player.stats.level > 3 && getRandomInteger(0,(playerlevel/4))) {
                 type = 'troll';
             } else {
                 type = 'goblin';
@@ -318,7 +324,7 @@ var player = null, $playerCell = null;
                 monster.stats.attack = 1;
                 monster.stats.type = 'goblin';
                 monster.stats.icon = 'g';
-                monster.stats.hp = getRandomInteger(5,20);
+                monster.stats.hp = getRandomInteger(5,15);
                 monster.stats.xpVal = 3 + (monster.stats.hp)/4;
                 break;
 
@@ -502,6 +508,7 @@ var player = null, $playerCell = null;
         }
 
         //did another monster move into that space first?
+        //waiting a beat seems to work; makes them follow organically but needs playtesting
         for (var _monster = 0; _monster < monsterList.length; _monster += 1) {
             if (checkOverlap(newPos, monsterList[_monster])) {
                 console.log('monster overlap');
@@ -718,10 +725,6 @@ var player = null, $playerCell = null;
 
 
     $(document).ready(function() {
-        createGameWindowEl(options);
-        $gameRows = $gameWindow.find('.row');
-        initGameArrays();
-
         $('#play-button').on('click', function(e) {
             e.preventDefault();
             freshBoot();
