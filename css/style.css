@@ -51,6 +51,14 @@ footer {
     width: 150px;
 }
 
+#title-card .goblin {
+    color: green;
+}
+
+#title-card .pizza {
+    color: red;
+}
+
 
 /* GAME WINDOW STYLINGS */
 #game-window {
