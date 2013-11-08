@@ -203,7 +203,6 @@ var player = null, $playerCell = null;
         if ($gameRows) {
             $gameRows.children().removeClass();
         }
-        createGameWindowEl(options);
         $gameRows = $gameWindow.find('.row');
         initGameArrays();
         $('#title-card').toggle();
@@ -721,6 +720,10 @@ var player = null, $playerCell = null;
 
 
     $(document).ready(function() {
+
+        //make the tv
+        createGameWindowEl(options);
+
         $('#play-button').on('click', function(e) {
             e.preventDefault();
             freshBoot();

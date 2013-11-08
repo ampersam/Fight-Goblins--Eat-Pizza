@@ -52,7 +52,7 @@ footer {
 }
 
 #title-card .goblin {
-    color: green;
+    color: limegreen;
 }
 
 #title-card .pizza {
@@ -88,6 +88,11 @@ footer {
 #interface li {
     display: inline;
     margin: 0 10px;
+}
+
+#interface-b canvas {
+    width: 200px;
+    height: 100px;
 }
 
 .line-of-sight {
