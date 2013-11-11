@@ -30,6 +30,7 @@ var player = null, $playerCell = null;
     //HUD elements
     var $playerHUD;
     $playerHUD = $('#interface');
+    $playerHUDb = $('#interface-b')
 
     var $playerCurrentHP, $playerMaxHP, $playerXP, $playerLevel;
     $playerCurrentHP = $playerHUD.find('.hp').children('.current');
@@ -38,7 +39,7 @@ var player = null, $playerCell = null;
     $playerXP = $playerHUD.find('.xp').children();
     $playerLevel = $playerHUD.find('.level').children();
 
-
+    var UItest;
 
     //leveling data
                     //   X   1   2   3   4   5   6   7    8    9   10   11
@@ -199,15 +200,183 @@ var player = null, $playerCell = null;
     }
 
 
+    //BETA INTERFACE CODE
+    var UIb = function () {
+        this.hudBG = $playerHUDb.find('#background').get(0);
+        this.hudFG = $playerHUDb.find('#foreground').get(0);
+
+        //stored settings for each bar
+        this.state = {
+            'hp': {
+                current: 0,         //player current hp
+                max: 0,             //player max hp
+
+                barWidth: 30,       //width of the hp bar
+                barLength: 235,     //length of the hp bar
+                barYPos: 40,        //Y position of the hp bar
+                barXPos: 30,        //X position of the hp bar
+                color: '#00ff00',   //color for the hp bar
+
+                label: 'HP',        //label for the bar
+                labelYPos: 72,      //Y position of the hp bar's label
+                labelSize: '3.7em',
+                labelLineWidth: 2
+            },
+            'xp': {
+                current: 0,
+                max: 0,
+
+                barWidth: 30,
+                barLength: 235,
+                barYPos: 87,
+                barXPos: 30, 
+                color: '#ffa500',
+
+                label: 'XP',
+                labelYPos: 119,
+                labelSize: '3.7em',
+                labelLineWidth: 2
+            }
+        };
+
+        //the contexts
+        this.bars = this.hudFG.getContext('2d');
+        this.labels = this.hudFG.getContext('2d');
+        this.boxArt = this.hudBG.getContext('2d');
+
+        //refresh the player state
+        this.ping = function () {
+            this.state.hp.current = player.stats.hp;
+            this.state.hp.max = player.stats.maxHP;
+            this.state.xp.current = player.stats.xp;
+            this.state.xp.max = xpArray[player.stats.level+1]
+        };
+
+        //pull from state to draw each bar
+        this.drawBar = function (bar, context) {
+            var _bar = typeof bar === 'object' ? bar : this.state[bar];
+            var _context = this[context];
+            var _percentFull = _bar.current/_bar.max;
+
+            //clear the old bar
+            _context.clearRect(
+                _bar.barXPos, _bar.barYPos,    //x, y pos
+                _bar.barLength, _bar.barWidth   //length, width
+            );
+
+            //draw the new bar
+            if (bar === 'hp' && _percentFull < .3) {
+                _context.fillStyle = 'red';
+            } else {
+                _context.fillStyle = _bar.color;
+            }
+            _context.fillRect(
+                _bar.barXPos, _bar.barYPos, 
+                (_bar.barLength * _percentFull), _bar.barWidth
+            );
+        };
+
+        this.drawBarBG = function (bar) {
+            var _bar = this.state[bar];
+
+            var _hpBGBar = {
+                barYPos: _bar.barYPos - 5,
+                barWidth: _bar.barWidth + 10,
+                barLength: _bar.barLength + 10,
+                barXPos: _bar.barXPos - 5,
+                color: '#000',
+                current: 1,
+                max: 1
+            }
+            this.drawBar(_hpBGBar, 'boxArt');
+        }
+
+        this.drawBG = function () {
+            var _boxArt = this.boxArt;
+
+            _gradient = _boxArt.createLinearGradient(295,0,300,0);
+            _gradient.addColorStop(0,'white');
+            _gradient.addColorStop(1, 'black');
+            _boxArt.fillStyle = _gradient;
+
+            _boxArt.fillRect(295, 0, 5, 600);
+        }
+
+        //labels go to the left of each bar
+        this.labelBar = function (bar) {
+            _bar = this.state[bar];
+            _labels = this.labels;
+
+            //label settings
+            _labels.fillStyle = '#fff';
+            _labels.font = _bar.labelSize + ' Courier';
+
+            //draw the label
+            _labels.fillText(
+                _bar.label,          //bar labels
+                30, _bar.labelYPos   //label x, y
+            );
+
+            if (_bar.labelLineWidth > 0) {
+                _labels.lineWidth = _bar.labelLineWidth;
+                _labels.strokeStyle = '#000';
+
+                _labels.strokeText(
+                    _bar.label,          //bar labels
+                    this.state[bar].barXPos, _bar.labelYPos   //label x, y
+                );
+            }
+        };
+
+        this.addBarTicks = function (bar) {
+            _bar = this.state[bar];
+            _labels = this.labels;
+
+            _labels.beginPath();
+            for (var _ticks = _bar.barXPos+23; _ticks <= _bar.barLength; _ticks += 23) {
+                _labels.moveTo(_ticks, _bar.barYPos+_bar.barWidth)
+                _labels.lineTo(_ticks, _bar.barYPos+_bar.barWidth-10);
+            }
+
+            _labels.strokeStyle = '#fff';
+            _labels.stroke();
+        }
+
+        //draw that shit
+        this.buildBars = function () {
+            this.ping();        //temporarily ping player stats here... can revise to only ping when data changes
+
+            this.drawBar('hp', 'bars');
+            this.drawBar('xp', 'bars');
+            
+            this.labelBar('hp');
+            this.labelBar('xp');
+        };
+        this.initHUD = function () {
+            this.drawBG();
+            this.drawBarBG('hp');
+            this.drawBarBG('xp');
+
+
+        }
+
+    };
+
     function freshBoot() {
+        //wipe classes in rows if they already exist (meaning a game over happened)
         if ($gameRows) {
             $gameRows.children().removeClass();
         }
+        //get those rows and make those arrays (state and jquery objects)
         $gameRows = $gameWindow.find('.row');
         initGameArrays();
+
+        //flip between the game and title card
         $('#title-card').toggle();
-        $gameWindow.toggle();
-        $playerHUD.toggle();
+        $('#game').toggle();
+
+        //if there's not a player, make one!
+        //if there is, wipe previous gamestate
         if (!player) createNewPlayer();
         else {
             player = null;
@@ -215,6 +384,9 @@ var player = null, $playerCell = null;
             pizza = null;
             $(document).unbind('keydown');
         }
+
+        // ui beta
+        UItest.buildBars();
     }
 
 
@@ -567,7 +739,7 @@ var player = null, $playerCell = null;
                 freshBoot();
             } else {
                 updateGameWindow(gameState);
-                updateUI();
+                UItest.buildBars();
             }
         }
     }
@@ -724,12 +896,17 @@ var player = null, $playerCell = null;
         //make the tv
         createGameWindowEl(options);
 
+        UItest = new UIb();
+        UItest.initHUD();
+
         $('#play-button').on('click', function(e) {
             e.preventDefault();
             freshBoot();
             updateGameWindow(gameState);
             $(document).on('keydown', playerAction);
         });
+
+
 
     });
 

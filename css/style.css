@@ -61,9 +61,13 @@ footer {
 
 
 /* GAME WINDOW STYLINGS */
-#game-window {
+#game {
     margin: 0 auto;
-    text-align: center;
+}
+
+#game-window {
+    width: 600px;
+    display: inline-block;
     font-size: 1.7em;
 }
 
@@ -76,7 +80,7 @@ footer {
 }
 
 #game-window div.row {
-    display: block;
+    display: inline-block;
 }
 
 #interface {
@@ -90,9 +94,21 @@ footer {
     margin: 0 10px;
 }
 
-#interface-b canvas {
-    width: 200px;
-    height: 100px;
+#interface-b {
+    position: relative;
+    display: inline-block;
+    float: left;
+    width: 300px;
+    height: 450px;
+}
+
+#interface-b canvas#foreground{
+    position: absolute;
+}
+
+#interface-b canvas#background {
+    z-index: -10;
+    position: absolute;
 }
 
 .line-of-sight {
