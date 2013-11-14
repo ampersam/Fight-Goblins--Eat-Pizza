@@ -29,15 +29,15 @@ var player = null, $playerCell = null;
 
     //HUD elements
     var $playerHUD;
-    $playerHUD = $('#interface');
+    // $playerHUD = $('#interface');
     $playerHUDb = $('#interface-b')
 
-    var $playerCurrentHP, $playerMaxHP, $playerXP, $playerLevel;
-    $playerCurrentHP = $playerHUD.find('.hp').children('.current');
-    $playerMaxHP = $playerHUD.find('.hp').children('.max');
+    // var $playerCurrentHP, $playerMaxHP, $playerXP, $playerLevel;
+    // $playerCurrentHP = $playerHUD.find('.hp').children('.current');
+    // $playerMaxHP = $playerHUD.find('.hp').children('.max');
     // $playerMaxHP = $($playerHUD + ' .hp .max');
-    $playerXP = $playerHUD.find('.xp').children();
-    $playerLevel = $playerHUD.find('.level').children();
+    // $playerXP = $playerHUD.find('.xp').children();
+    // $playerLevel = $playerHUD.find('.level').children();
 
     var UItest;
 
@@ -189,21 +189,29 @@ var player = null, $playerCell = null;
             drawIcon(player);
         }
 
-        updateUI();
+        // updateUI();
     }
 
-    function updateUI () {
-        $playerCurrentHP.html(player.stats.hp);
-        $playerMaxHP.html(player.stats.maxHP);
-        $playerXP.html(Math.floor(player.stats.xp));
-        $playerLevel.html(player.stats.level);
-    }
+    // function updateUI () {
+    //     $playerCurrentHP.html(player.stats.hp);
+    //     $playerMaxHP.html(player.stats.maxHP);
+    //     $playerXP.html(Math.floor(player.stats.xp));
+    //     $playerLevel.html(player.stats.level);
+    // }
 
 
     //BETA INTERFACE CODE
     var UIb = function () {
         this.hudBG = $playerHUDb.find('#background').get(0);
+        this.hudArt = $playerHUDb.find('#art').get(0);
         this.hudFG = $playerHUDb.find('#foreground').get(0);
+
+        this.hudBG.setAttribute('width', '300');
+        this.hudBG.setAttribute('height', '450');
+
+        this.hudFG.setAttribute('height', '450');
+
+        this.hudArt.setAttribute('height', '450');
 
         //stored settings for each bar
         this.state = {
@@ -212,13 +220,13 @@ var player = null, $playerCell = null;
                 max: 0,             //player max hp
 
                 barWidth: 30,       //width of the hp bar
-                barLength: 235,     //length of the hp bar
-                barYPos: 40,        //Y position of the hp bar
-                barXPos: 30,        //X position of the hp bar
+                barLength: 205,     //length of the hp bar
+                barYPos: 80,        //Y position of the hp bar
+                barXPos: 60,        //X position of the hp bar
                 color: '#00ff00',   //color for the hp bar
 
                 label: 'HP',        //label for the bar
-                labelYPos: 72,      //Y position of the hp bar's label
+                labelYPos: 112,      //Y position of the hp bar's label
                 labelSize: '3.7em',
                 labelLineWidth: 2
             },
@@ -227,13 +235,13 @@ var player = null, $playerCell = null;
                 max: 0,
 
                 barWidth: 30,
-                barLength: 235,
-                barYPos: 87,
-                barXPos: 30, 
+                barLength: 205,
+                barYPos: 127,
+                barXPos: 60, 
                 color: '#ffa500',
 
                 label: 'XP',
-                labelYPos: 119,
+                labelYPos: 159,
                 labelSize: '3.7em',
                 labelLineWidth: 2
             }
@@ -242,7 +250,8 @@ var player = null, $playerCell = null;
         //the contexts
         this.bars = this.hudFG.getContext('2d');
         this.labels = this.hudFG.getContext('2d');
-        this.boxArt = this.hudBG.getContext('2d');
+        this.barArt = this.hudArt.getContext('2d');
+        this.background = this.hudBG.getContext('2d');
 
         //refresh the player state
         this.ping = function () {
@@ -257,6 +266,7 @@ var player = null, $playerCell = null;
             var _bar = typeof bar === 'object' ? bar : this.state[bar];
             var _context = this[context];
             var _percentFull = _bar.current/_bar.max;
+            var _gradient;
 
             //clear the old bar
             _context.clearRect(
@@ -264,12 +274,20 @@ var player = null, $playerCell = null;
                 _bar.barLength, _bar.barWidth   //length, width
             );
 
-            //draw the new bar
-            if (bar === 'hp' && _percentFull < .3) {
-                _context.fillStyle = 'red';
-            } else {
-                _context.fillStyle = _bar.color;
+            //as long as we're not drawing bar backgrounds, make them pretty gradients
+            if (_bar.color !== 'black') {
+                _gradient = _context.createLinearGradient(0, _bar.barYPos, 0, _bar.barYPos+_bar.barWidth);
+                _gradient.addColorStop(0, 'white');
+                if (bar === 'hp' && _percentFull < .3) {
+                    _gradient.addColorStop(1, 'red');
+                } else {
+                    _gradient.addColorStop(1, _bar.color);
+                }
             }
+
+
+            //draw the new bar
+            _context.fillStyle = _gradient;
             _context.fillRect(
                 _bar.barXPos, _bar.barYPos, 
                 (_bar.barLength * _percentFull), _bar.barWidth
@@ -279,27 +297,36 @@ var player = null, $playerCell = null;
         this.drawBarBG = function (bar) {
             var _bar = this.state[bar];
 
-            var _hpBGBar = {
+            var _barBG = {
                 barYPos: _bar.barYPos - 5,
                 barWidth: _bar.barWidth + 10,
                 barLength: _bar.barLength + 10,
                 barXPos: _bar.barXPos - 5,
-                color: '#000',
+                color: 'black',
                 current: 1,
                 max: 1
             }
-            this.drawBar(_hpBGBar, 'boxArt');
+
+            this.drawBar(_barBG, 'barArt');
         }
 
         this.drawBG = function () {
-            var _boxArt = this.boxArt;
+            var _bg = this.background;
 
-            _gradient = _boxArt.createLinearGradient(295,0,300,0);
+            _gradient = _bg.createLinearGradient(295,0,300,0);
             _gradient.addColorStop(0,'white');
             _gradient.addColorStop(1, 'black');
-            _boxArt.fillStyle = _gradient;
+            _bg.fillStyle = _gradient;
 
-            _boxArt.fillRect(295, 0, 5, 600);
+            _bg.fillRect(295, 0, 5, 600);
+
+            _bg.font = '15em Courier';
+            _bg.fillStyle = '#efefef';
+
+            _bg.fillText(
+                '@',
+                -20, 190
+            )
         }
 
         //labels go to the left of each bar
@@ -314,7 +341,7 @@ var player = null, $playerCell = null;
             //draw the label
             _labels.fillText(
                 _bar.label,          //bar labels
-                30, _bar.labelYPos   //label x, y
+                60, _bar.labelYPos   //label x, y
             );
 
             if (_bar.labelLineWidth > 0) {
@@ -333,12 +360,12 @@ var player = null, $playerCell = null;
             _labels = this.labels;
 
             _labels.beginPath();
-            for (var _ticks = _bar.barXPos+23; _ticks <= _bar.barLength; _ticks += 23) {
+            for (var _ticks = _bar.barXPos+23; _ticks <= _bar.barXPos + _bar.barLength; _ticks += 23) {
                 _labels.moveTo(_ticks, _bar.barYPos+_bar.barWidth)
                 _labels.lineTo(_ticks, _bar.barYPos+_bar.barWidth-10);
             }
 
-            _labels.strokeStyle = '#fff';
+            _labels.strokeStyle = '#000';
             _labels.stroke();
         }
 
@@ -348,6 +375,9 @@ var player = null, $playerCell = null;
 
             this.drawBar('hp', 'bars');
             this.drawBar('xp', 'bars');
+
+            this.addBarTicks('hp');
+            this.addBarTicks('xp');
             
             this.labelBar('hp');
             this.labelBar('xp');
@@ -734,7 +764,7 @@ var player = null, $playerCell = null;
 
             //gameOver check
             if (player.stats.hp <= 0) {
-                updateUI();
+                // updateUI();
                 gameCells[player.pos.y][player.pos.x].removeClass('player');
                 freshBoot();
             } else {

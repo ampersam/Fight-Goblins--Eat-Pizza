@@ -106,10 +106,18 @@ footer {
     position: absolute;
 }
 
+#interface-b canvas#art{
+    position: absolute;
+    z-index: -5;
+}
+
 #interface-b canvas#background {
     z-index: -10;
     position: absolute;
+
 }
+
+
 
 .line-of-sight {
     background-color: rgba(100,100,255,.15);
